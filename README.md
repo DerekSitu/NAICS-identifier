@@ -20,11 +20,11 @@ Let's use as an example [this dataset on the top 2000 global companies](https://
 
 The input is a CSV file containing company data. At minimum it should contain company names. Here is an example of the first few rows and columns of our top 2000 global companies dataset.
 
-| Global Rank | Company | Sales ($billion)|                                                                                                           
-|--|--|--|--
-1 | ICBC | 134.8
-2 | China Construction Bank | 113.1
-3 | JPMorgan Chase | 108.2
+| Global Rank | Company | Sales ($billion) |                                                                                                           
+|--|--|--
+1 | ICBC | 134.8 |
+2 | China Construction Bank | 113.1 |
+3 | JPMorgan Chase | 108.2 |
 
 ## Output
 
