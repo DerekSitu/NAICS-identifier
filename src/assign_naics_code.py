@@ -1,5 +1,8 @@
 '''
 Driver function for NAICSCodeAssigner class
+
+PREREQUISITE:
+Set your OpenAI API key as an environment variable.
 '''
 
 import os
