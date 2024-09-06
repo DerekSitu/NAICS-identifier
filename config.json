@@ -1,7 +1,9 @@
 {
-    "input_filename": "./data/raw/ks_data240823_mod.csv",
+    "input_filename": "./data/processed/Top2000CompaniesGlobally_descriptions.csv",
     "separator_input_file": ",",
     "output_dir": "./data/processed",
-    "columns_business_description": ["name", "blurb", "category", "subcategory"],
-    "chunk_size": 10
+    "output_filename": "Top2000CompaniesGlobally_naics.csv",
+    "columns_business_description": ["Company", "Snippet"],
+    "chunk_size": 100,
+    "model": "gpt-4o-mini"
 }

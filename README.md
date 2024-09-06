@@ -1,80 +1,92 @@
-# Assigning NAICS codes to Kickstarter projects, using the ChatGPT API from OpenAI
+Forked from [this project that assigns NAICS codes to Kickstarter projects](https://github.com/UtrechtUniversity/kickstarter).
 
-### Introduction
+Changes:
 
-The goal of this project is to assign NAICS codes to Kickstarter projects. 
+- Added ability to extract company descriptions using Google Custom Search API
+- Updated syntax to work with version 0.28 of the *openai* library
+- Updated default model to gpt-4o-mini
 
-[Kickstarter](https://www.kickstarter.com/) is a crowdfunding website to raise money for creative projects. The [North American Industry Classification System](https://www.census.gov/naics/) (NAICS) is a standard for classifying businesses on the basis of their type of economic activity.
+# Assigning NAICS codes to companies using OpenAI's ChatGPT API
 
-We started with already-scraped [data about Kickstarter projects](https://webrobots.io/kickstarter-datasets/) from 2014 to 2023. We used the ChatGPT API (model `gpt-3.5-turbo`) to assign NAICS codes to these projects, on the basis of these four fields available from the data: 
+## Introduction
 
- - Name (Title of the project) 
- - Blurb  (A short description of the project)
- - Kickstarter category  
- - Kickstarter subcategory
+This project assigns NAICS codes to companies by extracting company descriptions from their websites using the Google Custom Search API before using the ChatGPT API to determine the most appropriate NAICS based on the company name and description.
 
-### Prerequisites
+[NAICS](https://www23.statcan.gc.ca/imdb/p3VD.pl?Function=getVD&TVD=1369825) (North American Industry Classification System) is a numeric identifier for industries.
 
-- Open an [OpenAI account](https://platform.openai.com/signup) and generate an [OpenAI API key](https://platform.openai.com/account/api-keys).   
-- Install the requirements by typing the following on the terminal:
-	`pip install -r requirements.txt`
+Let's use as an example [this dataset on the top 2000 global companies](https://www.kaggle.com/datasets/joebeachcapital/top-2000-companies-globally) in terms of revenue, profits, assets, and market value.
 
-### Usage
+## Input
 
-- **Create input data file**: Read the raw data (which is in JSON format) into an input CSV file containing,  at a minimum, the project id and the fields you want to use as your input to ChatGPT. Here the fields `name`, `blurb`, `category` and `subcategory` have been used.
+The input is a CSV file containing company data. At minimum it should contain company names. Here is an example of the first few rows and columns of our top 2000 global companies dataset.
 
-- **Obtain OpenAI API key**: Set the OpenAI key as an environment variable. 
-  - On Linux, type in the terminal:
- 
-   `export OPENAI_API_KEY=<your openai api key>`
-  - On Windows, type in the command prompt:
-  
-   `setx OPENAI_API_KEY <your openai api key>`
-- **Create configuration file**: Specify user-defined variables in the `config.json` file.
-- **Run program**: Run the program from the terminal:
-
-  `python src/assign_naics_code.py`
-
-### Input
-The input is a CSV file with information about Kickstarter projects. Here is an example with a few rows and the relevant columns shown:
-
-| name | blurb | category | subcategory|                                                                                                            
+| Global Rank | Company | Sales ($billion)|                                                                                                           
 |--|--|--|--
- Herbal Teas                                                 | All your herbal tea remedies here. From colds and sore throats to cramps and stress relaxation, you can find it here.          | Food         | Drinks         
-| The Meat Candy Experience                                   | The BEST beef sticks, beef jerky and signature sauces you will find anywhere...PERIOD.                                         | Food         | Small batch    
-| WHILE THE TREES SLEEP                                       | CalArts thesis film inspired by true events surrounding the 1965 murder of Civil Rights activist Viola Liuzzo.                 | Film & video | Shorts 
-| Orage: Interactive Lightning Experience at Burning Man 2015 | A Musical Lightning Storm. Get struck by lightning while collaboratively playing music with a 18-foot-tall musical Tesla Coil. | Art  | Installations  
-Graphic design tools for award-winning designs              | Professional graphic designers need professional tools. These are the best.                                                    | Design       | Graphic design 
-| The Gettysburg Story                                        | America’s greatest battle as you have never seen it before:  'The Gettysburg Story' on public television.                      | Film & video | Television
+1 | ICBC | 134.8
+2 | China Construction Bank | 113.1
+3 | JPMorgan Chase | 108.2
 
-### Output
+## Output
 
-The output is a CSV file which is the input file with additional columns containing the NAICS codes as well as the number of input tokens used and the output tokens produced by ChatGPT. Here is the output corresponding to the example input above, with the NAICS codes being from the year 2017:
+### extract_descriptions.py
 
-| name | blurb | category | subcategory |  naics code | input tokens | output tokens                                                                                                          
-|--|--|--|--|--|--|--
-| Herbal Teas                                                 | All your herbal tea remedies here. From colds and sore throats to cramps and stress relaxation, you can find it here.          | Food         | Drinks         |         7223 |            108 |               2 
-| The Meat Candy Experience                                   | The BEST beef sticks, beef jerky and signature sauces you will find anywhere...PERIOD.                                         | Food         | Small batch    |         3116 |            101 |               2 
-| WHILE THE TREES SLEEP                                       | CalArts thesis film inspired by true events surrounding the 1965 murder of Civil Rights activist Viola Liuzzo.                 | Film & video | Shorts         |         5121 |            111 |               2 
-| Orage: Interactive Lightning Experience at Burning Man 2015 | A Musical Lightning Storm. Get struck by lightning while collaboratively playing music with a 18-foot-tall musical Tesla Coil. | Art          | Installations  |         7113 |            115 |               2 
-| Graphic design tools for award-winning designs              | Professional graphic designers need professional tools. These are the best.                                                    | Design       | Graphic design |         5414 |             97 |               2 
-| The Gettysburg Story                                        | America’s greatest battle as you have never seen it before:  'The Gettysburg Story' on public television.                      | Film & video | Television     |         5121 |            110 |               2 |
+The output of the *extract_descriptions.py* script is the inputted CSV file with company descriptions ("snippets") added from Google search results.
 
-### License
+| Global Rank | Company | Sales ($billion)| Snippet                                                                                                    
+|--|--|--|--
+1 | ICBC | 134.8 | At ICBC, our job is making sure the auto insurance system works for all road users.
+2 | China Construction Bank | 113.1 | Address of headquarters:No.25, Finance Street, Xicheng District, Beijing, China, Postcode 100033 Mobile website: m.ccb.com
+3 | JPMorgan Chase | 108.2 | Committed to service, innovation and growth. JPMorganChase serves millions of customers, clients and communities in over 100 global markets.
 
-This project is licensed under the terms of the [MIT License](/LICENSE).
+### assign_naics_code.py
 
-### About the project
+The output of the *assign_naics_code.py* script is the company data CSV file with NAICS codes added. It also contains the number of input and output tokens used in the API call.
 
-**Date**: July - September 2023
+| Global Rank | Company | Sales ($billion)| Snippet | NAICS | Input Tokens | Output Tokens                                                                                                   
+|--|--|--|--|--|--|---
+1 | ICBC | 134.8 | At ICBC, our job is making sure the auto insurance system works for all road users. | 5241 | 93 | 2
+2 | China Construction Bank | 113.1 | Address of headquarters:No.25, Finance Street, Xicheng District, Beijing, China, Postcode 100033 Mobile website: m.ccb.com | 5221 |  108 | 2
+3 | JPMorgan Chase | 108.2 | Committed to service, innovation and growth. JPMorganChase serves millions of customers, clients and communities in over 100 global markets. | 5221 | 104 | 2
 
-**Researcher**:
-- Nicola Cortinovis (n.cortinovis@uu.nl)
+## Requirements
 
-**Research Assistant**:
-- Marte Vroom (m.m.vroom@uu.nl)
+- *pandas*, *openai*, *requests* libraries downloaded. Type in the terminal:
 
-**Research Engineers**:
-- Modhurita Mitra (m.mitra@uu.nl)
-- Shiva Nadi Najafabadi (s.nadinajafabadi@uu.nl)
-- Parisa Zahedi (p.zahedi@uu.nl)
+  `pip install -r requirements.txt`
+
+- Google Custom Search Engine ID. Obtainable [here](https://programmablesearchengine.google.com/about/). Set the search engine ID as an environment variable.
+  - On Linux/MacOS type in the terminal:
+
+    `export SEARCH_ENGINE_ID=your_engine_id`
+
+  - On Windows type in the terminal:
+
+    `setx SEARCH_ENGINE_ID "your_engine_id"`
+
+
+- Google API key with Custom Search API enabled. Free trials are available. [Google Cloud](https://cloud.google.com/). Set the API key as an environment variable.
+  - On Linux/MacOS type in the terminal:
+
+    `export GOOGLE_API_KEY=your_api_key`
+
+  - On Windows type in the terminal:
+
+    `setx GOOGLE_API_KEY "your_api_key"`
+
+
+- OpenAI API key with credits loaded. Set the API key as an environment variable.
+  - On Linux/MacOS type in the terminal:
+
+    `export OPENAI_API_KEY=your_api_key`
+
+  - On Windows type in the terminal:
+
+    `setx OPENAI_API_KEY "your_api_key"`
+
+## Run the program
+
+Run the program from the terminal.
+
+`python src/extract_descriptions.py`
+
+`python src/assign_naics_code.py`

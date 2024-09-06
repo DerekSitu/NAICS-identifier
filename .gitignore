@@ -1,0 +1,5 @@
+**/venv
+**/README_files
+README.html
+.DS_Store
+**/__pycache__
